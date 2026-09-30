@@ -1,0 +1,42 @@
+name: Build ORBIT APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch 3D map project
+        run: |
+          git clone --depth 1 --branch master https://github.com/ming-0107-l/delta-force-3d-map.git delta-map
+          cp -r delta-map/app .
+          cp delta-map/build.gradle .
+          cp delta-map/settings.gradle .
+          cp delta-map/gradle.properties . 2>/dev/null || true
+          sed -i 's/com.deltamap.app/com.orbit.radar/g' app/build.gradle
+          sed -i 's/com.deltamap.app/com.orbit.radar/g' app/src/main/AndroidManifest.xml
+          sed -i 's/DeltaForceMap/ORBIT 无卡密雷达/g' settings.gradle
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: gradle assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ORBIT-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
