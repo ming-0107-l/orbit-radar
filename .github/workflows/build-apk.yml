@@ -25,6 +25,31 @@ jobs:
           sed -i 's/package com.deltamap.app;/package com.orbit.radar;/' app/src/main/java/com/deltamap/app/MainActivity.java
           sed -i 's/label="三角洲地图"/label="ORBIT 无卡密雷达"/' app/src/main/AndroidManifest.xml
 
+          # Mobile WebView can expose a relatively small CSS viewport. Render the
+          # canvas at a higher physical pixel ratio so the map is not upscaled blurry.
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("app/src/main/assets/index.html")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace(
+              "renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));",
+              "const mobileDpr = matchMedia('(pointer: coarse)').matches ? 2.5 : (devicePixelRatio || 1);\nrenderer.setPixelRatio(Math.min(mobileDpr, 2.5));"
+          )
+          s = s.replace(
+              "low:  { pr: 0.7,  label: '流畅' },\n  mid:  { pr: 1.0,  label: '标准' },\n  high: { pr: 1.5,  label: '高清' },",
+              "low:  { pr: 0.70, label: '流畅' },\n  mid:  { pr: 1.00, label: '标准' },\n  high: { pr: 1.25, label: '高清' },"
+          )
+          s = s.replace(
+              "const pr = Math.min(QUALITY[q].pr, devicePixelRatio || 1);",
+              "const baseDpr = matchMedia('(pointer: coarse)').matches ? Math.max(devicePixelRatio || 1, 2.5) : (devicePixelRatio || 1);\n  const pr = Math.min(baseDpr * QUALITY[q].pr, 3.0);"
+          )
+          s = s.replace(
+              "renderer.setPixelRatio(Math.min(QUALITY[quality].pr, devicePixelRatio || 1));",
+              "const baseDpr = matchMedia('(pointer: coarse)').matches ? Math.max(devicePixelRatio || 1, 2.5) : (devicePixelRatio || 1);\n  renderer.setPixelRatio(Math.min(baseDpr * QUALITY[quality].pr, 3.0));"
+          )
+          p.write_text(s, encoding="utf-8")
+          PY
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
