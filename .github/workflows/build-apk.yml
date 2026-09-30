@@ -19,9 +19,11 @@ jobs:
           cp delta-map/build.gradle .
           cp delta-map/settings.gradle .
           cp delta-map/gradle.properties . 2>/dev/null || true
+
+          # Give the app its own package and label.
           sed -i 's/com.deltamap.app/com.orbit.radar/g' app/build.gradle
-          sed -i 's/com.deltamap.app/com.orbit.radar/g' app/src/main/AndroidManifest.xml
-          sed -i 's/DeltaForceMap/ORBIT 无卡密雷达/g' settings.gradle
+          sed -i 's/package com.deltamap.app;/package com.orbit.radar;/' app/src/main/java/com/deltamap/app/MainActivity.java
+          sed -i 's/label="三角洲地图"/label="ORBIT 无卡密雷达"/' app/src/main/AndroidManifest.xml
 
       - name: Setup Java
         uses: actions/setup-java@v4
