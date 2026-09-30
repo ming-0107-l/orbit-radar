@@ -32,7 +32,8 @@ jobs:
           p = Path("app/src/main/assets/index.html")
           s = p.read_text(encoding="utf-8")
           s = s.replace(
-              "renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));",
+              "renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2.5));
+          if (THREE.SRGBColorSpace) renderer.outputColorSpace = THREE.SRGBColorSpace;",
               "const mobileDpr = matchMedia('(pointer: coarse)').matches ? 2.5 : (devicePixelRatio || 1);\nrenderer.setPixelRatio(Math.min(mobileDpr, 2.5));"
           )
           s = s.replace(
