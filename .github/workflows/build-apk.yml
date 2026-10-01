@@ -48,6 +48,22 @@ jobs:
               "renderer.setPixelRatio(Math.min(QUALITY[quality].pr, devicePixelRatio || 1));",
               "const baseDpr = matchMedia('(pointer: coarse)').matches ? Math.max(devicePixelRatio || 1, 2.5) : (devicePixelRatio || 1);\n  renderer.setPixelRatio(Math.min(baseDpr * QUALITY[quality].pr, 3.0));"
           )
+          s = s.replace(
+              '<div class="chip" id="c-stat">就绪</div>',
+              '<div class="modebar"><button id="mode-2d" class="on">2D</button><button id="mode-3d">3D</button></div><div class="chip" id="c-stat">就绪</div>'
+          )
+          s = s.replace(
+              '  .chip b{color:var(--fg)}',
+              '  .chip b{color:var(--fg)}\\n  .modebar{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#111722}\\n  .modebar button{border:0;border-radius:0;padding:4px 12px;background:transparent;color:var(--sub);font-size:12px}\\n  .modebar button.on{background:rgba(63,169,255,.22);color:#dff2ff}'
+          )
+          s = s.replace(
+              'const canvas = renderer.domElement;',
+              'let map2D = true;\\nconst mode2d = document.getElementById("mode-2d");\\nconst mode3d = document.getElementById("mode-3d");\\nfunction applyViewMode(){ map2D=true; if(mode2d)mode2d.classList.add("on"); if(mode3d)mode3d.classList.remove("on"); if(!state.world)return; const b=new THREE.Box3(); if(buildGrp)b.expandByObject(buildGrp); if(termGrp&&termGrp.visible)b.expandByObject(termGrp); if(b.isEmpty())return; const c=b.getCenter(new THREE.Vector3()),sz=b.getSize(new THREE.Vector3()),r=Math.max(sz.x,sz.z)*0.5,d=r/Math.tan(Math.PI*camera.fov/360)*1.18; camera.position.set(c.x,c.y+d,c.z); camera.rotation.set(-Math.PI/2,0,0); camera.updateProjectionMatrix(); }\\nfunction set3D(){ map2D=false; if(mode2d)mode2d.classList.remove("on"); if(mode3d)mode3d.classList.add("on"); fit(); }\\nif(mode2d)mode2d.onclick=applyViewMode; if(mode3d)mode3d.onclick=set3D;\\n\\nconst canvas = renderer.domElement;'
+          )
+          s = s.replace(
+              '    fit();\\n    startTest(el(\'s-test\').classList.contains(\'on\'));',
+              '    fit();\\n    setTimeout(applyViewMode, 0);\\n    startTest(el(\'s-test\').classList.contains(\'on\'));'
+          )
           p.write_text(s, encoding="utf-8")
           PY
 
